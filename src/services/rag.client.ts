@@ -11,7 +11,7 @@ export class RAGClient {
   private ragUrl: string;
 
   constructor() {
-    this.ragUrl = process.env.RAG_SERVICE_URL || 'http://localhost:8080';
+    this.ragUrl = process.env.RAG_SERVICE_URL || 'http://localhost:8085';
   }
 
   /**
@@ -22,8 +22,8 @@ export class RAGClient {
       logger.info(`[RAG Client] Consultando RAG: "${question}"`);
 
       const response = await axios.post(
-        `${this.ragUrl}/api/chat`,
-        { message: question },
+        `${this.ragUrl}/api/v1/chat`,
+        { question }, // O ms-chat-ai espera 'question'
         {
           timeout: 30000,
           headers: {
@@ -35,9 +35,9 @@ export class RAGClient {
       logger.info('[RAG Client] Resposta recebida do RAG');
 
       return {
-        answer: response.data.response || response.data.answer || response.data,
+        answer: response.data.answer,
         confidence: response.data.confidence || 0.8,
-        sources: response.data.sources || [],
+        sources: response.data.metadata?.sources || [],
       };
     } catch (error: any) {
       logger.error('[RAG Client] Erro ao consultar RAG:', error.message);

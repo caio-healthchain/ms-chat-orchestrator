@@ -46,6 +46,15 @@ class ChatOrchestratorService {
 
   private initializeRoutes(): void {
     this.app.use('/api/v1', chatRoutes);
+
+    this.app.get('/health', (req, res) => {
+      res.json({
+        success: true,
+        service: 'ms-chat-orchestrator',
+        status: 'running',
+        timestamp: new Date().toISOString(),
+      });
+    });
     
     this.app.get('/', (req, res) => {
       res.json({

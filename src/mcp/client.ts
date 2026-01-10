@@ -64,9 +64,9 @@ export class MCPClient {
   }
 
   /**
-   * Executa uma tool MCP via REST API
+   * Executa uma tool MCP via REST API com retry
    */
-  async executeTool(toolCall: MCPToolCall): Promise<MCPResponse> {
+  async executeTool(toolCall: MCPToolCall, retries = 3, delay = 1000): Promise<MCPResponse> {
     try {
       logger.info(`[MCP Client] Executando tool: ${toolCall.service}/${toolCall.tool}`, { args: toolCall.arguments });
 
@@ -74,7 +74,7 @@ export class MCPClient {
 
       const response = await axios.get(url, {
         params,
-        timeout: 10000,
+        timeout: 30000, // Aumentado para 30 segundos
       });
 
       logger.info(`[MCP Client] Tool executada com sucesso: ${toolCall.tool}`);
@@ -84,7 +84,13 @@ export class MCPClient {
         data: response.data.data || response.data,
       };
     } catch (error: any) {
-      logger.error(`[MCP Client] Erro ao executar tool ${toolCall.tool}:`, error.message);
+      logger.error(`[MCP Client] Erro ao executar tool ${toolCall.tool} (tentativa ${4 - retries}):`, error.message);
+      
+      if (retries > 0) {
+        await new Promise(res => setTimeout(res, delay));
+        return this.executeTool(toolCall, retries - 1, delay * 2);
+      }
+
       return {
         success: false,
         data: null,
