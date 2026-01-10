@@ -24,15 +24,20 @@ export class OrchestratorService {
   private classifier: ClassifierService;
   private mcpClient: MCPClient;
   private ragClient: RAGClient;
-  private openai: OpenAI;
+  private openai: OpenAI | null = null;
 
   constructor() {
     this.classifier = new ClassifierService();
     this.mcpClient = new MCPClient();
     this.ragClient = new RAGClient();
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
+    
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (apiKey) {
+      this.openai = new OpenAI({ apiKey });
+      logger.info('[Orchestrator] OpenAI client inicializado com sucesso.');
+    } else {
+      logger.warn('[Orchestrator] OPENAI_API_KEY não encontrada. Formatação de resposta pode ser limitada.');
+    }
   }
 
   /**
@@ -101,6 +106,11 @@ export class OrchestratorService {
    * Formata resposta analítica com LLM
    */
   private async formatAnalyticsAnswer(question: string, data: any[]): Promise<string> {
+    if (!this.openai) {
+      logger.warn('[Orchestrator] OpenAI não configurado. Retornando dados brutos.');
+      return JSON.stringify(data, null, 2);
+    }
+
     const systemPrompt = `Você é um assistente de análise de dados hospitalares.
 
 Sua tarefa é formatar os dados em uma resposta clara e profissional em português.

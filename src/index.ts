@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config(); // Carregar variáveis de ambiente ANTES de qualquer outro import
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -5,11 +8,8 @@ import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
-import dotenv from 'dotenv';
 import chatRoutes from './routes/chat.routes';
 import { logger } from './config/logger';
-
-dotenv.config();
 
 class ChatOrchestratorService {
   private app: express.Application;

@@ -10,18 +10,26 @@ export interface ClassificationResult {
 }
 
 export class ClassifierService {
-  private openai: OpenAI;
+  private openai: OpenAI | null = null;
 
   constructor() {
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (apiKey) {
+      this.openai = new OpenAI({ apiKey });
+      logger.info('[Classifier] OpenAI client inicializado com sucesso.');
+    } else {
+      logger.warn('[Classifier] OPENAI_API_KEY não encontrada. Classificador usará fallback.');
+    }
   }
 
   /**
    * Classifica a pergunta do usuário
    */
   async classifyQuestion(question: string): Promise<ClassificationResult> {
+    if (!this.openai) {
+      return this.fallback(question);
+    }
+
     try {
       logger.info(`[Classifier] Classificando pergunta: "${question}"`);
 
@@ -78,13 +86,16 @@ Responda APENAS com JSON válido no formato:
       return result;
     } catch (error: any) {
       logger.error('[Classifier] Erro ao classificar pergunta:', error.message);
-      
-      // Fallback: assumir que é pergunta de conhecimento
-      return {
-        type: 'knowledge',
-        confidence: 0.5,
-        ragQuery: question,
-      };
+      return this.fallback(question);
     }
+  }
+
+  private fallback(question: string): ClassificationResult {
+    logger.warn('[Classifier] Usando fallback: assumindo pergunta de conhecimento.');
+    return {
+      type: 'knowledge',
+      confidence: 0.5,
+      ragQuery: question,
+    };
   }
 }
