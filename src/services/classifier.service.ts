@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import { logger } from '../config/logger';
 import { MCPToolCall } from '../mcp/client';
+import { MCPMapperService } from './mcp-mapper.service';
 
 export interface ClassificationResult {
   type: 'analytics' | 'knowledge';
@@ -11,8 +12,10 @@ export interface ClassificationResult {
 
 export class ClassifierService {
   private openai: OpenAI | null = null;
+  private mcpMapper: MCPMapperService;
 
   constructor() {
+    this.mcpMapper = new MCPMapperService();
     const apiKey = process.env.OPENAI_API_KEY;
     if (apiKey) {
       this.openai = new OpenAI({ apiKey });
@@ -26,12 +29,40 @@ export class ClassifierService {
    * Classifica a pergunta do usuário
    */
   async classifyQuestion(question: string): Promise<ClassificationResult> {
+    // Tratar saudações
+    if (this.isGreeting(question)) {
+      logger.info('[Classifier] Pergunta identificada como saudação');
+      return {
+        type: 'analytics',
+        confidence: 1.0,
+        toolCalls: [],
+        ragQuery: undefined
+      };
+    }
+
+    // Tentar mapear com MCPMapper primeiro (mais rápido e eficiente)
+    const mappedMCPs = this.mcpMapper.mapQuestionToMCPs(question);
+    if (mappedMCPs.length > 0) {
+      logger.info(`[Classifier] Mapeamento direto encontrou ${mappedMCPs.length} MCP(s)`);
+      const toolCalls = mappedMCPs.map(mcp => ({
+        service: mcp.service,
+        tool: mcp.tool,
+        arguments: this.mcpMapper.extractParameters(question, mcp)
+      }));
+      return {
+        type: 'analytics',
+        confidence: 0.85,
+        toolCalls
+      };
+    }
+
+    // Se não encontrou mapeamento, usar OpenAI como fallback
     if (!this.openai) {
       return this.fallback(question);
     }
 
     try {
-      logger.info(`[Classifier] Classificando pergunta: "${question}"`);
+      logger.info(`[Classifier] Classificando pergunta com OpenAI: "${question}"`);
 
       const systemPrompt = `Você é um classificador de perguntas para um sistema hospitalar.
 
@@ -59,6 +90,12 @@ Se for **analytics**, identifique qual(is) ferramenta(s) MCP usar:
 - get_audit_metrics: Métricas de auditoria
 - get_correction_analysis: Análise de correções
 - get_billing_analysis: Análise de faturamento
+
+**ms-contracts:**
+- get_contract_by_operadora: Contrato ativo de uma operadora
+- get_contract_items: Itens de um contrato
+- get_procedure_price: Valor contratado de um procedimento
+- get_contract_summary: Resumo do contrato
 
 Responda APENAS com JSON válido no formato:
 {
@@ -96,6 +133,15 @@ Responda APENAS com JSON válido no formato:
     }
   }
 
+  /**
+   * Verifica se a pergunta é uma saudação
+   */
+  private isGreeting(question: string): boolean {
+    const greetings = ['olá', 'oi', 'opa', 'e aí', 'e ai', 'tudo bem', 'como vai', 'opa', 'hey', 'opa', 'oii'];
+    const lowerQuestion = question.toLowerCase().trim();
+    return greetings.some(greeting => lowerQuestion === greeting || lowerQuestion.startsWith(greeting));
+  }
+
   private fallback(question: string): ClassificationResult {
     logger.warn('[Classifier] Usando fallback: assumindo pergunta de conhecimento.');
     return {
@@ -103,5 +149,19 @@ Responda APENAS com JSON válido no formato:
       confidence: 0.5,
       ragQuery: question,
     };
+  }
+
+  /**
+   * Retorna mensagem de boas-vindas
+   */
+  getWelcomeMessage(): string {
+    return this.mcpMapper.generateWelcomeMessage();
+  }
+
+  /**
+   * Retorna capacidades do chat
+   */
+  getCapabilities(): string[] {
+    return this.mcpMapper.getCapabilities();
   }
 }

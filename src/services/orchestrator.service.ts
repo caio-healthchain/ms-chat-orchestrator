@@ -47,11 +47,21 @@ export class OrchestratorService {
     try {
       logger.info(`[Orchestrator] Processando pergunta: "${request.question}"`);
 
-      // 1. Classificar pergunta
+      // 1. Verificar se é saudação
+      if (this.isGreeting(request.question)) {
+        const welcomeMessage = this.classifier.getWelcomeMessage();
+        return {
+          answer: welcomeMessage,
+          source: 'mcp',
+          confidence: 1.0,
+        };
+      }
+
+      // 2. Classificar pergunta
       const classification = await this.classifier.classifyQuestion(request.question);
 
-      // 2. Rotear para serviço apropriado
-      if (classification.type === 'analytics' && classification.toolCalls) {
+      // 3. Rotear para serviço apropriado
+      if (classification.type === 'analytics' && classification.toolCalls && classification.toolCalls.length > 0) {
         return await this.handleAnalyticsQuestion(request.question, classification.toolCalls);
       } else {
         return await this.handleKnowledgeQuestion(request.question, classification.ragQuery || request.question);
@@ -65,6 +75,15 @@ export class OrchestratorService {
         confidence: 0,
       };
     }
+  }
+
+  /**
+   * Verifica se a pergunta é uma saudação
+   */
+  private isGreeting(question: string): boolean {
+    const greetings = ['olá', 'oi', 'opa', 'e aí', 'e ai', 'tudo bem', 'como vai', 'hey', 'oii'];
+    const lowerQuestion = question.toLowerCase().trim();
+    return greetings.some(greeting => lowerQuestion === greeting || lowerQuestion.startsWith(greeting));
   }
 
   /**
