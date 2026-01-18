@@ -129,7 +129,7 @@ ${JSON.stringify(data, null, 2)}
 Formate uma resposta clara e profissional.`;
 
     const response = await this.openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-4.1-mini',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },

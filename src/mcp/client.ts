@@ -18,10 +18,16 @@ export class MCPClient {
 
   constructor() {
     this.serviceUrls = {
-      'ms-guide': process.env.MS_GUIDE_URL || 'http://localhost:3002',
-      'ms-procedures': process.env.MS_PROCEDURES_URL || 'http://localhost:3003',
-      'ms-audit': process.env.MS_AUDIT_URL || 'http://localhost:3004',
+      'ms-guide': process.env.MS_GUIDE_URL || 'http://localhost:3002/api/v1',
+      'ms-procedures': process.env.MS_PROCEDURES_URL || 'http://localhost:3003/api/v1',
+      'ms-audit': process.env.MS_AUDIT_URL || 'http://localhost:3004/api/v1',
     };
+    
+    logger.info('[MCP Client] Service URLs configuradas:', {
+      'ms-guide': this.serviceUrls['ms-guide'],
+      'ms-procedures': this.serviceUrls['ms-procedures'],
+      'ms-audit': this.serviceUrls['ms-audit'],
+    });
   }
 
   /**
@@ -32,23 +38,23 @@ export class MCPClient {
     
     const toolMap: Record<string, Record<string, { endpoint: string; method: string }>> = {
       'ms-guide': {
-        'get_daily_guides_summary': { endpoint: '/api/v1/analytics/guides/daily-summary', method: 'GET' },
-        'get_guides_revenue': { endpoint: '/api/v1/analytics/guides/revenue', method: 'GET' },
-        'get_guides_by_status': { endpoint: '/api/v1/analytics/guides/by-status', method: 'GET' },
-        'get_guides_by_operator': { endpoint: '/api/v1/analytics/guides/by-operator', method: 'GET' },
+        'get_daily_guides_summary': { endpoint: '/analytics/guides/daily-summary', method: 'GET' },
+        'get_guides_revenue': { endpoint: '/analytics/guides/revenue', method: 'GET' },
+        'get_guides_by_status': { endpoint: '/analytics/guides/by-status', method: 'GET' },
+        'get_guides_by_operator': { endpoint: '/analytics/guides/by-operator', method: 'GET' },
       },
       'ms-procedures': {
-        'get_top_procedures': { endpoint: '/api/v1/analytics/procedures/top', method: 'GET' },
-        'get_procedures_statistics': { endpoint: '/api/v1/analytics/procedures/statistics', method: 'GET' },
-        'get_efficiency_metrics': { endpoint: '/api/v1/analytics/procedures/efficiency', method: 'GET' },
-        'get_category_analysis': { endpoint: '/api/v1/analytics/procedures/category', method: 'GET' },
-        'get_procedures_by_period': { endpoint: '/api/v1/analytics/procedures/by-period', method: 'GET' },
+        'get_top_procedures': { endpoint: '/analytics/procedures/top', method: 'GET' },
+        'get_procedures_statistics': { endpoint: '/analytics/procedures/statistics', method: 'GET' },
+        'get_efficiency_metrics': { endpoint: '/analytics/procedures/efficiency', method: 'GET' },
+        'get_category_analysis': { endpoint: '/analytics/procedures/category', method: 'GET' },
+        'get_procedures_by_period': { endpoint: '/analytics/procedures/by-period', method: 'GET' },
       },
       'ms-audit': {
-        'get_savings_summary': { endpoint: '/api/v1/analytics/savings', method: 'GET' },
-        'get_audit_metrics': { endpoint: '/api/v1/analytics/audit-metrics', method: 'GET' },
-        'get_correction_analysis': { endpoint: '/api/v1/analytics/corrections', method: 'GET' },
-        'get_billing_analysis': { endpoint: '/api/v1/analytics/billing', method: 'GET' },
+        'get_savings_summary': { endpoint: '/analytics/savings', method: 'GET' },
+        'get_audit_metrics': { endpoint: '/analytics/audit-metrics', method: 'GET' },
+        'get_correction_analysis': { endpoint: '/analytics/corrections', method: 'GET' },
+        'get_billing_analysis': { endpoint: '/analytics/billing', method: 'GET' },
       },
     };
 
