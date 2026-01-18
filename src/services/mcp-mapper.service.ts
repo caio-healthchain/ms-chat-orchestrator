@@ -39,6 +39,13 @@ export class MCPMapperService {
       keywords: ['operadora', 'operador', 'unimed', 'amil', 'bradesco', 'sulamerica'],
       description: 'Guias de uma operadora específica'
     },
+    {
+      service: 'ms-guide',
+      tool: 'get_guides_history',
+      arguments: {},
+      keywords: ['histórico', 'historico', 'passado', 'todas', 'todas as guias', 'guias anteriores', 'guias antigas'],
+      description: 'Histórico completo de todas as guias (passado e presente)'
+    },
 
     // MS-PROCEDURES Mappings
     {
