@@ -15,7 +15,7 @@ export class MCPMapperService {
       service: 'ms-guide',
       tool: 'get_daily_guides_summary',
       arguments: { period: 'day' },
-      keywords: ['guia', 'guias', 'hoje', 'diário', 'resumo', 'finalizada', 'finalizadas', 'andamento', 'cancelada', 'canceladas'],
+      keywords: ['hoje', 'diário', 'agora', 'atual'],
       description: 'Resumo diário de guias (finalizadas, em andamento, canceladas)'
     },
     {
@@ -43,7 +43,7 @@ export class MCPMapperService {
       service: 'ms-guide',
       tool: 'get_guides_history',
       arguments: {},
-      keywords: ['histórico', 'historico', 'passado', 'todas', 'todas as guias', 'guias anteriores', 'guias antigas'],
+      keywords: ['histórico', 'historico', 'passado', 'todas', 'todas as guias', 'guias anteriores', 'guias antigas', 'guia', 'guias', 'finalizada', 'finalizadas', 'andamento', 'cancelada', 'canceladas', 'total', 'quantas'],
       description: 'Histórico completo de todas as guias (passado e presente)'
     },
 
