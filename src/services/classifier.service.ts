@@ -86,6 +86,12 @@ Responda APENAS com JSON válido no formato:
       return result;
     } catch (error: any) {
       logger.error('[Classifier] Erro ao classificar pergunta:', error.message);
+      logger.error('[Classifier] Detalhes do erro:', {
+        message: error.message,
+        status: error.status,
+        type: error.type,
+        response: error.response?.data,
+      });
       return this.fallback(question);
     }
   }
