@@ -52,6 +52,7 @@ export class MCPClient {
         'get_efficiency_metrics': { endpoint: '/analytics/procedures/efficiency', method: 'GET' },
         'get_category_analysis': { endpoint: '/analytics/procedures/category', method: 'GET' },
         'get_procedures_by_period': { endpoint: '/analytics/procedures/by-period', method: 'GET' },
+        'get_procedures_history': { endpoint: '/analytics/procedures/history', method: 'GET' },
       },
       'ms-audit': {
         'get_savings_summary': { endpoint: '/analytics/savings', method: 'GET' },

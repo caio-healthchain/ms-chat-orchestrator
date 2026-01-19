@@ -83,6 +83,13 @@ export class MCPMapperService {
       keywords: ['período', 'mês', 'semana', 'ano'],
       description: 'Procedimentos por período'
     },
+    {
+      service: 'ms-procedures',
+      tool: 'get_procedures_history',
+      arguments: {},
+      keywords: ['procedimento', 'procedimentos', 'histórico', 'historico', 'passado', 'todas', 'todos os procedimentos', 'procedimentos anteriores', 'procedimentos antigos', 'total', 'quantos', 'quantas', 'realizados', 'realizado'],
+      description: 'Histórico completo de todos os procedimentos realizados'
+    },
 
     // MS-AUDIT Mappings
     {
