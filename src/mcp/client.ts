@@ -61,11 +61,11 @@ export class MCPClient {
         'get_billing_analysis': { endpoint: '/analytics/billing', method: 'GET' },
       },
       'ms-contracts': {
-        'get_contract_by_operadora': { endpoint: '/mcp/contracts/by-operadora', method: 'GET' },
-        'get_contract_items': { endpoint: '/mcp/contracts/items', method: 'GET' },
-        'get_procedure_price': { endpoint: '/mcp/contracts/price', method: 'GET' },
-        'get_contract_summary': { endpoint: '/mcp/contracts/summary', method: 'GET' },
-        'list_contracts_by_operadora': { endpoint: '/mcp/contracts/operadora', method: 'GET' },
+        'get_contract_by_operadora': { endpoint: '/contracts/by-operadora', method: 'GET' },
+        'get_contract_items': { endpoint: '/contracts', method: 'GET' },
+        'get_procedure_price': { endpoint: '/contracts', method: 'GET' },
+        'get_contract_summary': { endpoint: '/contracts', method: 'GET' },
+        'list_contracts_by_operadora': { endpoint: '/contracts/operadora', method: 'GET' },
       },
     };
 
@@ -74,8 +74,31 @@ export class MCPClient {
       throw new Error(`Tool ${tool} não encontrada no serviço ${service}`);
     }
 
+    // Construir URL com parâmetros path quando necessário
+    let url = `${baseUrl}${mapping.endpoint}`;
+    
+    // Para endpoints com parâmetros path, substituir placeholders
+    if (service === 'ms-contracts') {
+      if (tool === 'get_contract_by_operadora') {
+        url = `${baseUrl}/contracts/by-operadora/${args.operadoraNome}`;
+        return { url, params: {} };
+      } else if (tool === 'get_contract_items') {
+        url = `${baseUrl}/contracts/${args.contratoId}/items`;
+        return { url, params: { page: args.page, limit: args.limit } };
+      } else if (tool === 'get_procedure_price') {
+        url = `${baseUrl}/contracts/${args.contratoId}/items/${args.codigoTUSS}/price`;
+        return { url, params: {} };
+      } else if (tool === 'get_contract_summary') {
+        url = `${baseUrl}/contracts/${args.contratoId}/summary`;
+        return { url, params: {} };
+      } else if (tool === 'list_contracts_by_operadora') {
+        url = `${baseUrl}/contracts/operadora/${args.operadoraNome}`;
+        return { url, params: {} };
+      }
+    }
+    
     return {
-      url: `${baseUrl}${mapping.endpoint}`,
+      url,
       params: args,
     };
   }
