@@ -112,12 +112,14 @@ export class MCPClient {
 
       const { url, params } = this.mapToolToEndpoint(toolCall.service, toolCall.tool, toolCall.arguments);
 
+      logger.info(`[MCP Client] URL construída: ${url}`, { params, tool: toolCall.tool, service: toolCall.service });
+
       const response = await axios.get(url, {
         params,
         timeout: 30000, // Aumentado para 30 segundos
       });
 
-      logger.info(`[MCP Client] Tool executada com sucesso: ${toolCall.tool}`);
+      logger.info(`[MCP Client] Tool executada com sucesso: ${toolCall.tool}`, { statusCode: response.status, dataLength: JSON.stringify(response.data).length });
 
       return {
         success: true,
@@ -130,6 +132,14 @@ export class MCPClient {
         await new Promise(res => setTimeout(res, delay));
         return this.executeTool(toolCall, retries - 1, delay * 2);
       }
+
+      logger.error(`[MCP Client] Erro final após ${4 - retries} tentativas para ${toolCall.tool}:`, {
+        error: error.message,
+        code: error.code,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        url: error.config?.url,
+      });
 
       return {
         success: false,

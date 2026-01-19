@@ -24,6 +24,9 @@ class ChatOrchestratorService {
   }
 
   private initializeMiddlewares(): void {
+    // Trust proxy - necessário quando atrás de um reverse proxy (APIM, Ingress, etc)
+    this.app.set('trust proxy', 1);
+
     // Security
     this.app.use(helmet());
     this.app.use(cors({
@@ -35,8 +38,30 @@ class ChatOrchestratorService {
     const limiter = rateLimit({
       windowMs: 15 * 60 * 1000,
       max: 100,
+      skip: (req) => {
+        // Skip rate limit para health check
+        return req.path === '/health';
+      },
     });
     this.app.use(limiter);
+
+    // Log de requisições para debug
+    this.app.use((req, res, next) => {
+      const startTime = Date.now();
+      res.on('finish', () => {
+        const duration = Date.now() - startTime;
+        logger.info(`[HTTP] ${req.method} ${req.path}`, {
+          method: req.method,
+          path: req.path,
+          query: req.query,
+          statusCode: res.statusCode,
+          duration: `${duration}ms`,
+          ip: req.ip,
+          'x-forwarded-for': req.get('x-forwarded-for'),
+        });
+      });
+      next();
+    });
 
     // Body parsing
     this.app.use(express.json());
