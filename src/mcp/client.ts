@@ -21,12 +21,14 @@ export class MCPClient {
       'ms-guide': process.env.MS_GUIDE_URL || 'http://localhost:3002/api/v1',
       'ms-procedures': process.env.MS_PROCEDURES_URL || 'http://localhost:3003/api/v1',
       'ms-audit': process.env.MS_AUDIT_URL || 'http://localhost:3004/api/v1',
+      'ms-contracts': process.env.MS_CONTRACTS_URL || 'http://localhost:3014/api',
     };
     
     logger.info('[MCP Client] Service URLs configuradas:', {
       'ms-guide': this.serviceUrls['ms-guide'],
       'ms-procedures': this.serviceUrls['ms-procedures'],
       'ms-audit': this.serviceUrls['ms-audit'],
+      'ms-contracts': this.serviceUrls['ms-contracts'],
     });
   }
 
@@ -42,6 +44,7 @@ export class MCPClient {
         'get_guides_revenue': { endpoint: '/analytics/guides/revenue', method: 'GET' },
         'get_guides_by_status': { endpoint: '/analytics/guides/by-status', method: 'GET' },
         'get_guides_by_operator': { endpoint: '/analytics/guides/by-operator', method: 'GET' },
+        'get_guides_history': { endpoint: '/analytics/guides/history', method: 'GET' },
       },
       'ms-procedures': {
         'get_top_procedures': { endpoint: '/analytics/procedures/top', method: 'GET' },
@@ -55,6 +58,13 @@ export class MCPClient {
         'get_audit_metrics': { endpoint: '/analytics/audit-metrics', method: 'GET' },
         'get_correction_analysis': { endpoint: '/analytics/corrections', method: 'GET' },
         'get_billing_analysis': { endpoint: '/analytics/billing', method: 'GET' },
+      },
+      'ms-contracts': {
+        'get_contract_by_operadora': { endpoint: '/mcp/contracts/by-operadora', method: 'GET' },
+        'get_contract_items': { endpoint: '/mcp/contracts/items', method: 'GET' },
+        'get_procedure_price': { endpoint: '/mcp/contracts/price', method: 'GET' },
+        'get_contract_summary': { endpoint: '/mcp/contracts/summary', method: 'GET' },
+        'list_contracts_by_operadora': { endpoint: '/mcp/contracts/operadora', method: 'GET' },
       },
     };
 
