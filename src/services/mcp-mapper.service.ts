@@ -126,7 +126,7 @@ export class MCPMapperService {
       service: 'ms-contracts',
       tool: 'list_contracts_by_operadora',
       arguments: { operadoraNome: '' },
-      keywords: ['contrato', 'operadora', 'unimed', 'amil', 'bradesco', 'particular'],
+      keywords: ['contrato', 'operadora', 'unimed', 'amil', 'bradesco', 'particular', 'hospital', '9', 'julho', 'h9j', 'nove'],
       description: 'Contratos de uma operadora'
     },
     {
@@ -204,10 +204,23 @@ export class MCPMapperService {
     const args = { ...mapping.arguments };
 
     if (mapping.tool.includes('operadora') || mapping.keywords.includes('operadora')) {
-      const operadoras = ['unimed', 'amil', 'bradesco', 'sulamerica', 'particular'];
-      for (const op of operadoras) {
-        if (lowerQuestion.includes(op)) {
-          args.operadoraNome = op;
+      // Mapeamento de aliases para operadoras
+      const operadoraAliases: Record<string, string> = {
+        'unimed': 'unimed',
+        'amil': 'amil',
+        'bradesco': 'bradesco',
+        'sulamerica': 'sulamerica',
+        'particular': 'particular',
+        'h9j': 'particular',
+        'hospital 9 de julho': 'particular',
+        'hospital nove de julho': 'particular',
+        'nove de julho': 'particular',
+        '9 de julho': 'particular',
+      };
+      
+      for (const [alias, operadora] of Object.entries(operadoraAliases)) {
+        if (lowerQuestion.includes(alias)) {
+          args.operadoraNome = operadora;
           break;
         }
       }
