@@ -124,10 +124,10 @@ export class MCPMapperService {
     // MS-CONTRACTS Mappings
     {
       service: 'ms-contracts',
-      tool: 'get_contract_by_operadora',
+      tool: 'list_contracts_by_operadora',
       arguments: { operadoraNome: '' },
       keywords: ['contrato', 'operadora', 'unimed', 'amil', 'bradesco', 'particular'],
-      description: 'Contrato ativo de uma operadora'
+      description: 'Contratos de uma operadora'
     },
     {
       service: 'ms-contracts',
