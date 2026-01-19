@@ -13,6 +13,7 @@ export interface ClassificationResult {
 export class ClassifierService {
   private openai: OpenAI | null = null;
   private mcpMapper: MCPMapperService;
+  private context?: Record<string, any>;
 
   constructor() {
     this.mcpMapper = new MCPMapperService();
@@ -26,9 +27,16 @@ export class ClassifierService {
   }
 
   /**
+   * Define o contexto da conversa
+   */
+  setContext(context: Record<string, any>): void {
+    this.context = context;
+  }
+
+  /**
    * Classifica a pergunta do usuário
    */
-  async classifyQuestion(question: string): Promise<ClassificationResult> {
+  async classifyQuestion(question: string, context?: Record<string, any>): Promise<ClassificationResult> {
     // Tratar saudações
     if (this.isGreeting(question)) {
       logger.info('[Classifier] Pergunta identificada como saudação');
@@ -47,7 +55,7 @@ export class ClassifierService {
       const toolCalls = mappedMCPs.map(mcp => ({
         service: mcp.service,
         tool: mcp.tool,
-        arguments: this.mcpMapper.extractParameters(question, mcp)
+        arguments: this.mcpMapper.extractParameters(question, mcp, context)
       }));
       return {
         type: 'analytics',

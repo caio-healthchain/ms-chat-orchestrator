@@ -152,7 +152,7 @@ export class MCPClient {
   /**
    * Executa múltiplas tools em paralelo
    */
-  async executeMultipleTools(toolCalls: MCPToolCall[]): Promise<MCPResponse[]> {
+  async executeMultipleTools(toolCalls: MCPToolCall[], conversationId?: string): Promise<MCPResponse[]> {
     const promises = toolCalls.map(toolCall => this.executeTool(toolCall));
     return Promise.all(promises);
   }

@@ -199,9 +199,19 @@ export class MCPMapperService {
     return validMappings.slice(0, 1).map(m => m.mapping);
   }
 
-  extractParameters(question: string, mapping: MCPMapping): Record<string, any> {
+  extractParameters(question: string, mapping: MCPMapping, context?: Record<string, any>): Record<string, any> {
     const lowerQuestion = question.toLowerCase();
     const args = { ...mapping.arguments };
+    
+    // Injetar contexto se disponível
+    if (context) {
+      if (context.contratoId && (mapping.tool.includes('item') || mapping.tool.includes('price') || mapping.tool.includes('summary'))) {
+        args.contratoId = context.contratoId;
+      }
+      if (context.operadoraNome && !args.operadoraNome) {
+        args.operadoraNome = context.operadoraNome;
+      }
+    }
 
     if (mapping.tool.includes('operadora') || mapping.keywords.includes('operadora')) {
       // Mapeamento de aliases para operadoras

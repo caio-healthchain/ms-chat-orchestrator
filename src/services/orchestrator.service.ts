@@ -2,6 +2,7 @@ import OpenAI from 'openai';
 import { ClassifierService } from './classifier.service';
 import { MCPClient } from '../mcp/client';
 import { RAGClient } from './rag.client';
+import { ContextManagerService } from './context-manager.service';
 import { logger } from '../config/logger';
 
 export interface ChatRequest {
@@ -24,12 +25,14 @@ export class OrchestratorService {
   private classifier: ClassifierService;
   private mcpClient: MCPClient;
   private ragClient: RAGClient;
+  private contextManager: ContextManagerService;
   private openai: OpenAI | null = null;
 
   constructor() {
     this.classifier = new ClassifierService();
     this.mcpClient = new MCPClient();
     this.ragClient = new RAGClient();
+    this.contextManager = new ContextManagerService();
     
     const apiKey = process.env.OPENAI_API_KEY;
     if (apiKey) {
@@ -47,6 +50,11 @@ export class OrchestratorService {
     try {
       logger.info(`[Orchestrator] Processando pergunta: "${request.question}"`);
 
+      // 0. Obter ou criar contexto da conversa
+      const conversationId = request.conversationId || 'default';
+      const context = this.contextManager.getContext(conversationId);
+      logger.debug(`[Orchestrator] Contexto atual:`, context);
+
       // 1. Verificar se é saudação
       if (this.isGreeting(request.question)) {
         const welcomeMessage = this.classifier.getWelcomeMessage();
@@ -57,12 +65,12 @@ export class OrchestratorService {
         };
       }
 
-      // 2. Classificar pergunta
-      const classification = await this.classifier.classifyQuestion(request.question);
+      // 2. Classificar pergunta com contexto
+      const classification = await this.classifier.classifyQuestion(request.question, context);
 
       // 3. Rotear para serviço apropriado
       if (classification.type === 'analytics' && classification.toolCalls && classification.toolCalls.length > 0) {
-        return await this.handleAnalyticsQuestion(request.question, classification.toolCalls);
+        return await this.handleAnalyticsQuestion(request.question, classification.toolCalls, conversationId);
       } else {
         return await this.handleKnowledgeQuestion(request.question, classification.ragQuery || request.question);
       }
@@ -89,11 +97,11 @@ export class OrchestratorService {
   /**
    * Processa pergunta analítica via MCP
    */
-  private async handleAnalyticsQuestion(question: string, toolCalls: any[]): Promise<ChatResponse> {
+  private async handleAnalyticsQuestion(question: string, toolCalls: any[], conversationId: string): Promise<ChatResponse> {
     logger.info(`[Orchestrator] Processando pergunta analítica com ${toolCalls.length} tool(s)`);
 
     // Executar tools MCP
-    const results = await this.mcpClient.executeMultipleTools(toolCalls);
+    const results = await this.mcpClient.executeMultipleTools(toolCalls, conversationId);
 
     // Agregar dados
     const successfulResults = results.filter(r => r.success);
@@ -106,6 +114,11 @@ export class OrchestratorService {
         confidence: 0,
       };
     }
+
+    // Extrair e atualizar contexto com IDs da resposta
+    dataRetrieved.forEach(data => {
+      this.contextManager.extractAndUpdateContext(conversationId, data);
+    });
 
     // Formatar resposta com LLM
     const formattedAnswer = await this.formatAnalyticsAnswer(question, dataRetrieved);
